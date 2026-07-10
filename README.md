@@ -46,6 +46,8 @@ set MYSQL_PASSWORD=你的密码 && mvn spring-boot:run
 
 后端启动后访问：`http://localhost:8080`
 
+停止后端：`Ctrl + C`
+
 ### 3. 启动前端
 
 ```bash
@@ -55,6 +57,8 @@ npm run dev
 ```
 
 前端启动后访问：`http://localhost:3000`
+
+停止前端：`Ctrl + C`
 
 ## ⚙️ 配置说明
 
