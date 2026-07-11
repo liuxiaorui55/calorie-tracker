@@ -1,10 +1,10 @@
 package com.calorie.controller;
 
+import com.calorie.common.Result;
 import com.calorie.entity.User;
 import com.calorie.service.UserService;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -24,25 +24,47 @@ public class UserController {
     /** 注册 */
     @PostMapping("/register")
     public Map<String, Object> register(@RequestBody Map<String, Object> body) {
+        String username = (String) body.get("username");
+        String password = (String) body.get("password");
+
+        if (username == null || username.trim().isEmpty()) {
+            return Result.error("用户名不能为空");
+        }
+        if (password == null || password.trim().isEmpty()) {
+            return Result.error("密码不能为空");
+        }
+        if (password.trim().length() < 6) {
+            return Result.error("密码长度不能少于6位");
+        }
+
         try {
-            String username = (String) body.get("username");
-            String password = (String) body.get("password");
             String gender = (String) body.getOrDefault("gender", "");
             Integer age = body.get("age") != null ? ((Number) body.get("age")).intValue() : null;
-            User user = userService.register(username, password, gender, age);
-            return ok(user);
+            if (age != null && age <= 0) {
+                return Result.error("年龄必须大于0");
+            }
+            User user = userService.register(username.trim(), password, gender, age);
+            return Result.ok(user);
         } catch (RuntimeException e) {
-            return error(e.getMessage());
+            return Result.error(e.getMessage());
         }
     }
 
     /** 登录 */
     @PostMapping("/login")
     public Map<String, Object> login(@RequestBody Map<String, Object> body) {
+        String username = (String) body.get("username");
+        String password = (String) body.get("password");
+
+        if (username == null || username.trim().isEmpty()) {
+            return Result.error("用户名不能为空");
+        }
+        if (password == null || password.trim().isEmpty()) {
+            return Result.error("密码不能为空");
+        }
+
         try {
-            String username = (String) body.get("username");
-            String password = (String) body.get("password");
-            User user = userService.login(username, password);
+            User user = userService.login(username.trim(), password);
             // 返回时隐藏密码
             Map<String, Object> data = new LinkedHashMap<>();
             data.put("id", user.getId());
@@ -50,9 +72,9 @@ public class UserController {
             data.put("gender", user.getGender());
             data.put("age", user.getAge());
             data.put("token", user.getToken());
-            return ok(data);
+            return Result.ok(data);
         } catch (RuntimeException e) {
-            return error(e.getMessage());
+            return Result.error(e.getMessage());
         }
     }
 
@@ -63,7 +85,7 @@ public class UserController {
         if (user != null) {
             userService.logout(user.getId());
         }
-        return ok(null);
+        return Result.ok(null);
     }
 
     /** 获取当前用户信息 */
@@ -71,29 +93,13 @@ public class UserController {
     public Map<String, Object> info(@RequestHeader("Authorization") String token) {
         User user = userService.findByToken(token);
         if (user == null) {
-            return error("未登录");
+            return Result.error("未登录");
         }
         Map<String, Object> data = new LinkedHashMap<>();
         data.put("id", user.getId());
         data.put("username", user.getUsername());
         data.put("gender", user.getGender());
         data.put("age", user.getAge());
-        return ok(data);
-    }
-
-    private Map<String, Object> ok(Object data) {
-        Map<String, Object> result = new HashMap<>();
-        result.put("code", 200);
-        result.put("message", "success");
-        result.put("data", data);
-        return result;
-    }
-
-    private Map<String, Object> error(String message) {
-        Map<String, Object> result = new HashMap<>();
-        result.put("code", 500);
-        result.put("message", message);
-        result.put("data", null);
-        return result;
+        return Result.ok(data);
     }
 }

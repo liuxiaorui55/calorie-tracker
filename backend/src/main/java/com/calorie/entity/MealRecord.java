@@ -5,6 +5,9 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Positive;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -24,18 +27,22 @@ public class MealRecord {
     private LocalDate recordDate;
 
     /** 餐别：BREAKFAST / LUNCH / DINNER */
+    @NotBlank(message = "餐别不能为空")
     private String mealType;
 
     /** 关联食物ID */
+    @NotNull(message = "食物ID不能为空")
     private Long foodId;
 
     /** 食物名称（冗余字段，方便展示） */
     private String foodName;
 
     /** 食用份量 */
+    @NotNull(message = "食用份量不能为空")
+    @Positive(message = "食用份量必须大于0")
     private BigDecimal quantity;
 
-    /** 小计热量 = 食物单位热量 × (份量 / 默认份量) */
+    /** 小计热量 = 食物单位热量 × 食用份量 */
     private Integer totalCalories;
 
     /** 用户ID */
